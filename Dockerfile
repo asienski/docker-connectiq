@@ -1,6 +1,30 @@
-FROM ubuntu:18.04
+ARG BASE_IMAGE="scottyhardy/docker-remote-desktop"
+ARG TAG="ubuntu-18.04"
+FROM ${BASE_IMAGE}:${TAG}
 
-# Build-time metadata as defined at http://label-schema.org
+# Install prerequisites
+RUN apt-get update \
+    && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        cabextract \
+        git \
+        gosu \
+        gpg-agent \
+        p7zip \
+        pulseaudio \
+        pulseaudio-utils \
+        software-properties-common \
+        tzdata \
+        unzip \
+        wget \
+        winbind \
+        xvfb \
+        zenity \
+    && rm -rf /var/lib/apt/lists/*
+
+
+
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
@@ -60,19 +84,25 @@ ADD [ "eclipse-workspace/.metadata/.plugins/org.eclipse.core.runtime/.settings/I
 ADD [ "org.eclipse.ui.ide.prefs", "/opt/eclipse/configuration/.settings/org.eclipse.ui.ide.prefs" ]
 
 # USER developer as 1000
-RUN mkdir -p /home/developer && \
-    echo "developer:x:1000:1000:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
-    echo "developer:x:1000:" >> /etc/group && \
-    chown developer:developer -R /home/developer && \
-    chown developer:developer -R /opt
+#RUN mkdir -p /home/developer && \
+#    echo "developer:x:1000:1000:developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
+#    echo "developer:x:1000:" >> /etc/group && \
+#    chown developer:developer -R /home/developer && \
+RUN chown 1000:1000 -R /opt
 
-USER developer
-ENV HOME /home/developer
-WORKDIR /home/developer
+#USER developer
+#ENV HOME /home/developer
+#WORKDIR /home/developer
 
 ENV ECLIPSE_HOME    /opt/eclipse
 ENV CIQ_HOME        /opt/ciq/bin
 ENV PATH ${PATH}:${CIQ_HOME}:${ECLIPSE_HOME}
 
-# CMD [ "/opt/eclipse/eclipse" ]
-CMD [ "/bin/bash" ]
+COPY pulse-client.conf /root/pulse/client.conf
+COPY entrypoint.sh /usr/bin/entrypoint
+
+# Install prerequisites
+RUN apt-get update \
+    && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends vim-nox sudo
+
+ENTRYPOINT ["/usr/bin/entrypoint"]

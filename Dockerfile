@@ -94,15 +94,17 @@ RUN chown 1000:1000 -R /opt
 #ENV HOME /home/developer
 #WORKDIR /home/developer
 
-ENV ECLIPSE_HOME    /opt/eclipse
-ENV CIQ_HOME        /opt/ciq/bin
-ENV PATH ${PATH}:${CIQ_HOME}:${ECLIPSE_HOME}
+# Install prerequisites
+# TODO: add user developer to sudoers
+RUN apt-get update \
+    && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends vim-nox sudo
+
+#ENV ECLIPSE_HOME    /opt/eclipse
+#ENV CIQ_HOME        /opt/ciq/bin
+#ENV PATH ${PATH}:${CIQ_HOME}:${ECLIPSE_HOME}
 
 COPY pulse-client.conf /root/pulse/client.conf
 COPY entrypoint.sh /usr/bin/entrypoint
 
-# Install prerequisites
-RUN apt-get update \
-    && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends vim-nox sudo
 
 ENTRYPOINT ["/usr/bin/entrypoint"]

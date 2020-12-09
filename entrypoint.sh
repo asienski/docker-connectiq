@@ -28,12 +28,12 @@ useradd --shell /bin/bash --uid "${USER_UID}" --gid "${USER_GID}" --password "${
 
 # Create the user's home if it doesn't exist
 [ ! -d "${USER_HOME}" ] && mkdir -p "${USER_HOME}"
-echo<<<EOF
+
+cat << EOF > ${USER_HOME}/.bashrc
 export ECLIPSE_HOME=/opt/eclipse
 export CIQ_HOME=/opt/ciq/bin
 export PATH=\$PATH:\${PATH}:\${CIQ_HOME}:\${ECLIPSE_HOME}
-EOF > ${USER_HOME}/.bashrc
-
+EOF
 # Take ownership of user's home directory if owned by root or if FORCED_OWNERSHIP is enabled
 OWNER_IDS="$(stat -c "%u:%g" "${USER_HOME}")"
 if [ "${OWNER_IDS}" != "${USER_UID}:${USER_GID}" ]; then
